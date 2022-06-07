@@ -9,6 +9,22 @@ let user_id;
 let tabuleiro = [[0, 0], [0, 0]];
 let tabuleiro_adversario = [[0, 0], [0, 0]];
 
+function atualiza_tabuleiro(json){
+    // limpa o chat
+    chat.innerHTML = "";
+
+    // atualiza o tabuleiro do cliente.
+    tabuleiro = json.tabuleiro;
+    tabuleiro_adversario = json.tabuleiro_adversario;
+    
+    const divTabuleiro = document.createElement("DIV");
+    divTabuleiro.innerHTML = "Tabuleiro: " + JSON.stringify(tabuleiro);
+    const divTabuleiroAdv = document.createElement("DIV");
+    divTabuleiroAdv.innerHTML = "Tabuleiro Adversário: " + JSON.stringify(tabuleiro_adversario);
+    chat.appendChild(divTabuleiro);
+    chat.appendChild(divTabuleiroAdv);
+}
+
 ws.onmessage = (event) => {        
     console.log(event.data);
     const json = JSON.parse(event.data);
@@ -23,22 +39,13 @@ ws.onmessage = (event) => {
         divIDUser.innerHTML = "ID do usuário: " + json.user_id;
         cabecalho.appendChild(divIDPartida);
         cabecalho.appendChild(divIDUser);
+
+        // limpa o chat
+        atualiza_tabuleiro(json);
     }
 
     if (json.type == 'update') {
-        // limpa o chat
-        chat.innerHTML = "";
-
-        // atualiza o tabuleiro do cliente.
-        tabuleiro = json.tabuleiro;
-        tabuleiro_adversario = json.tabuleiro_adversario;
-        
-        const divTabuleiro = document.createElement("DIV");
-        divTabuleiro.innerHTML = "Tabuleiro: " + JSON.stringify(tabuleiro);
-        const divTabuleiroAdv = document.createElement("DIV");
-        divTabuleiroAdv.innerHTML = "Tabuleiro Adversário: " + JSON.stringify(tabuleiro_adversario);
-        chat.appendChild(divTabuleiro);
-        chat.appendChild(divTabuleiroAdv);
+        atualiza_tabuleiro(json);
     }
 }
 

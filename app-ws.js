@@ -4,7 +4,17 @@ const uuid = require('uuid');
 let waiting_clients = 0;
 let clients = [];
 let partidas = {};
-const tabuleiro_base = [[0, 0], [0, 0]];
+let tabuleiro_base = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
+
+function getRandomTabuleiro(tabuleiro) {
+    for(let i = 0; i < tabuleiro.length; i++) {
+        for(let j = 0; j < tabuleiro[i].length; j++) {
+            if(Math.random() < 0.2){
+                tabuleiro[i][j] = 1;
+            }
+        }
+    }
+}
  
 function onError(ws, err) {
     console.error(`onError: ${err.message}`);
@@ -18,16 +28,37 @@ function onMessage(ws, data) {
         data: 'Recebido'
     }));
 
-    if (json.message == "A1") {
-        if (partidas[json.partida_id].jogador1.user_id == json.user_id) {
-            partidas[json.partida_id].jogador1.tabuleiro = [[1, 0], [0, 0]];
-            partidas[json.partida_id].jogador2.tabuleiro_adversario = [[1, 0], [0, 0]];
+    const msgArray = json.message.split(":");
+    const x = msgArray[0]
+    const y = msgArray[1]
+
+    console.log(`x: ${x}, y: ${y}`);
+
+    if (partidas[json.partida_id].jogador1.user_id == json.user_id) {
+        if(partidas[json.partida_id].jogador2.tabuleiro[x][y] == 1){
+            partidas[json.partida_id].jogador1.tabuleiro_adversario[x][y] = "x";
+            partidas[json.partida_id].jogador2.tabuleiro[x][y] = "x"
         }
         else{
-            partidas[json.partida_id].jogador2.tabuleiro = [[1, 0], [0, 0]];
-            partidas[json.partida_id].jogador1.tabuleiro_adversario = [[1, 0], [0, 0]];
+            partidas[json.partida_id].jogador1.tabuleiro_adversario[x][y] = "-";
+            partidas[json.partida_id].jogador2.tabuleiro[x][y] = "-";
         }
     }
+    else{
+        if(partidas[json.partida_id].jogador1.tabuleiro[x][y] == 1){
+            partidas[json.partida_id].jogador2.tabuleiro_adversario[x][y] = "x";
+            partidas[json.partida_id].jogador1.tabuleiro[x][y] = "x"
+        }
+        else{
+            partidas[json.partida_id].jogador2.tabuleiro_adversario[x][y] = "-";
+            partidas[json.partida_id].jogador1.tabuleiro[x][y] = "-";
+        }
+    }
+
+    console.log(`tabuleiro 1 meu pós: ${JSON.stringify(partidas[json.partida_id].jogador1.tabuleiro)}`);
+    console.log(`tabuleiro 1 adv pós: ${JSON.stringify(partidas[json.partida_id].jogador1.tabuleiro_adversario)}`);
+    console.log(`tabuleiro 2 meu pós: ${JSON.stringify(partidas[json.partida_id].jogador2.tabuleiro)}`);
+    console.log(`tabuleiro 2 adv pós: ${JSON.stringify(partidas[json.partida_id].jogador2.tabuleiro_adversario)}`);
     
     partidas[json.partida_id].jogador1.client.send(
         JSON.stringify({
@@ -64,34 +95,58 @@ function onConnection(ws, req) {
         console.log(`Quantidade mínima de jogadores atingida. Partida formada!`);
         let id  = uuid.v4();
         let user_ids = [uuid.v4(), uuid.v4()];
+        
+        let tab1 = JSON.parse(JSON.stringify(tabuleiro_base));
+        let tab1adv = JSON.parse(JSON.stringify(tabuleiro_base));
+        getRandomTabuleiro(tab1);
+
+        let tab2 = JSON.parse(JSON.stringify(tabuleiro_base));
+        let tab2adv = JSON.parse(JSON.stringify(tabuleiro_base));
+        getRandomTabuleiro(tab2);
+
         partidas[id] = {
             jogador1: {
                 client: clients[0],
                 user_id: user_ids[0],
                 websocket: 0,
-                tabuleiro: tabuleiro_base,
-                tabuleiro_adversario: tabuleiro_base
+                tabuleiro: tab1,
+                tabuleiro_adversario: tab1adv
             },
             jogador2: {
                 client: clients[1],
                 user_id: user_ids[1],
                 websocket: 0,
-                tabuleiro: tabuleiro_base,
-                tabuleiro_adversario: tabuleiro_base
+                tabuleiro: tab2,
+                tabuleiro_adversario: tab2adv
             },
             situacao: 0,
             vencedor: -1,
             vez: 0
         }
 
-        for (const [i, client] of clients.entries()) {
-            console.log(`Enviando informações da partida para o cliente ${i}`);
-            client.send(JSON.stringify({
+        console.log(`tabuleiro 1 meu pós: ${JSON.stringify(partidas[id].jogador1.tabuleiro)}`);
+        console.log(`tabuleiro 1 adv pós: ${JSON.stringify(partidas[id].jogador1.tabuleiro_adversario)}`);
+        console.log(`tabuleiro 2 meu pós: ${JSON.stringify(partidas[id].jogador2.tabuleiro)}`);
+        console.log(`tabuleiro 2 adv pós: ${JSON.stringify(partidas[id].jogador2.tabuleiro_adversario)}`);
+
+        partidas[id].jogador1.client.send(
+            JSON.stringify({
                 type: 'game_start',
                 partida_id: id,
-                user_id: user_ids[i],
-            }));
-        }
+                user_id: user_ids[0],
+                tabuleiro: partidas[id].jogador1.tabuleiro,
+                tabuleiro_adversario: partidas[id].jogador1.tabuleiro_adversario,
+            })
+        );
+        partidas[id].jogador2.client.send(
+            JSON.stringify({
+                type: 'game_start',
+                partida_id: id,
+                user_id: user_ids[1],
+                tabuleiro: partidas[id].jogador2.tabuleiro,
+                tabuleiro_adversario: partidas[id].jogador2.tabuleiro_adversario,
+            })
+        );
 
         clients = [];
         waiting_clients = 0;
