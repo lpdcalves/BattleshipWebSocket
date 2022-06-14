@@ -128,8 +128,9 @@ function onMessage(ws, data) {
                     partidas[id].jogadores[idx].tabuleiro_adversario[y][x] = tile_types["miss"];
                     partidas[id].jogadores[(idx+1) % 2].tabuleiro[y][x] = tile_types["miss"];
                     console.log("errou");
+                    partidas[id].vez = (partidas[id].vez+1) % 2;
                 }
-                partidas[id].vez = (partidas[id].vez+1) % 2;
+                
             }
             else{
                 partidas[id].jogadores[idx].client.send(
