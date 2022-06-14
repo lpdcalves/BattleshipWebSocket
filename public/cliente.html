@@ -37,6 +37,16 @@
             clear: both;
         }
 
+        .popups {
+            border: 2px solid rgb(197, 60, 90);
+            border-radius: 0.5em;
+            background-color: rgb(242, 103, 122);
+            margin-bottom: 10px;
+            padding: 3px;
+            float: left;
+            clear: both;
+        }
+
         input {
             border: 1px solid rgb(180, 180, 180);
             border-radius: 0.3em;
@@ -50,6 +60,13 @@
             font-family: 'PT Sans', sans-serif;
             font-size: 20px;
             color:rgb(18, 18, 18)
+        }
+
+        td {
+            text-align: center;
+            height: 30px;
+            width: 30px;
+            border:2px solid #DDD;
         }
 
         #chat {
@@ -90,6 +107,10 @@
         <button onClick="send()" >
             Enviar
         </button>
+    </div>
+
+    <div id="popups">
+
     </div>
 
     <div id="chat">

@@ -4,22 +4,18 @@ const uuid = require('uuid');
 let waiting_clients = 0;
 let clients = [];
 let partidas = {};
-let tabuleiro_base = [[0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0]];
+let tabuleiro_base = [["~", "~", "~", "~", "~"], ["~", "~", "~", "~", "~"], ["~", "~", "~", "~", "~"], ["~", "~", "~", "~", "~"], ["~", "~", "~", "~", "~"]];
+let tile_types = {
+    "agua": "~",
+    "navio": "#",
+    "miss": "O",
+    "hit": "X",
+};
 const STATUS_SETUP = 0;
 const STATUS_START = 1;
 const STATUS_READY = 2;
 const STATUS_FINISHED = 3;
 
-
-function getRandomTabuleiro(tabuleiro) {
-    for(let i = 0; i < tabuleiro.length; i++) {
-        for(let j = 0; j < tabuleiro[i].length; j++) {
-            if(Math.random() < 0.2){
-                tabuleiro[i][j] = 1;
-            }
-        }
-    }
-}
  
 function onError(ws, err) {
     console.error(`onError: ${err.message}`);
@@ -56,9 +52,10 @@ function onMessage(ws, data) {
         else if(partidas[id].status == STATUS_SETUP){
             // Se o jogador ainda tem barcos para serem colocados
             if(partidas[id].jogadores[idx].qtd_barcos > 0 ){
-                if(partidas[id].jogadores[idx].tabuleiro[y][x] != 1){
+                // Se no local do tabuleiro ainda nao tem nenhum navio
+                if(partidas[id].jogadores[idx].tabuleiro[y][x] != tile_types["navio"]){
                     // TODO: colocar aqui a lógica dos tipos de barco diferentes
-                    partidas[id].jogadores[idx].tabuleiro[y][x] = 1;
+                    partidas[id].jogadores[idx].tabuleiro[y][x] = tile_types["navio"];
                     partidas[id].jogadores[idx].qtd_barcos -= 1;
                     console.log(`Barco colocado pelo jogador ${idx} na posição x: ${x}, y: ${y}`);
                     // Se usar todos os barcos
@@ -104,9 +101,21 @@ function onMessage(ws, data) {
             if(partidas[id].vez == idx){
                 console.log(`Idx inimigo: ${(idx+1) % 2}`);
                 // Se acertou
-                if(partidas[id].jogadores[(idx+1) % 2].tabuleiro[y][x] == 1){
-                    partidas[id].jogadores[idx].tabuleiro_adversario[y][x] = "x";
-                    partidas[id].jogadores[(idx+1) % 2].tabuleiro[y][x] = "x";
+                if(partidas[id].jogadores[(idx+1) % 2].tabuleiro[y][x] == tile_types["navio"]){
+                    partidas[id].jogadores[idx].client.send(
+                        JSON.stringify({
+                            type: 'popup',
+                            message: 'Você acertou um navio inimigo!',
+                        })
+                    );
+                    partidas[id].jogadores[(idx+1) % 2].client.send(
+                        JSON.stringify({
+                            type: 'popup',
+                            message: 'Seu navio foi acertado!',
+                        })
+                    );
+                    partidas[id].jogadores[idx].tabuleiro_adversario[y][x] = tile_types["hit"];
+                    partidas[id].jogadores[(idx+1) % 2].tabuleiro[y][x] = tile_types["hit"];
                     partidas[id].jogadores[(idx+1) % 2].vida -= 1;
                     if(partidas[id].jogadores[(idx+1) % 2].vida == 0){
                         partidas[id].vencedor = idx
@@ -116,8 +125,8 @@ function onMessage(ws, data) {
                 }
                 // Se errou
                 else{
-                    partidas[id].jogadores[idx].tabuleiro_adversario[y][x] = "-";
-                    partidas[id].jogadores[(idx+1) % 2].tabuleiro[y][x] = "-";
+                    partidas[id].jogadores[idx].tabuleiro_adversario[y][x] = tile_types["miss"];
+                    partidas[id].jogadores[(idx+1) % 2].tabuleiro[y][x] = tile_types["miss"];
                     console.log("errou");
                 }
                 partidas[id].vez = (partidas[id].vez+1) % 2;
