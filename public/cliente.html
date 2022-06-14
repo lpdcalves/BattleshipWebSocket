@@ -2,30 +2,54 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; media-src *; img-src 'self' data: content:;">
-    <title>WS Client</title>
+    <!-- <meta http-equiv="X-UA-Compatible" content="IE=edge"> -->
+    <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0"> -->
+    <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; media-src *; img-src 'self' data: content:;"> -->
+    <title>Batalha Naval</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=PT+Sans&display=swap" rel="stylesheet"> 
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fascinate&display=swap" rel="stylesheet"> 
 
     <!-- Estilos para os elementos do HTML -->
     <style>
-        .mensagem-usuario {
-            border: 2px solid darkcyan;
+        .notificacoes {
+            border: 2px solid rgb(68, 147, 226);
             border-radius: 0.5em;
-            background-color: lightgreen;
-            margin-bottom: 10px;
-            padding: 3px;
-            float: right;
-            clear: both;
-        }
-        .mensagem-outro {
-            border: 2px solid lightgray;
-            border-radius: 0.5em;
-            background-color: azure;
+            background-color: rgb(103, 242, 237);
             margin-bottom: 10px;
             padding: 3px;
             float: left;
             clear: both;
+        }
+
+        .instrucoes {
+            border: 2px solid rgb(60, 197, 99);
+            border-radius: 0.5em;
+            background-color: rgb(103, 242, 173);
+            margin-bottom: 10px;
+            padding: 3px;
+            float: left;
+            clear: both;
+        }
+
+        input {
+            border: 1px solid rgb(180, 180, 180);
+            border-radius: 0.3em;
+            margin-top: 5px;
+            margin-bottom: 5px;
+            padding: 3px;
+            width: 20px;
+        }
+
+        body {
+            font-family: 'PT Sans', sans-serif;
+            font-size: 20px;
+            color:rgb(18, 18, 18)
         }
 
         #chat {
@@ -43,18 +67,33 @@
     </script>
 </head>
 <body>
-    <div id="cabecalho" style="clear: both;">
-        BATALHA NAVAL <br/>
+    <div id="titulo" style="clear: both; font-size: 28px; font-family: 'Fascinate', cursive;">
+        Batalha Naval <br/>
     </div>
-    <div id="chat">
+
+    <div id="cabecalho" style="clear: both; font-size: 16px;">
         
     </div>
+
+    <div id="notificacoes">
+
+    </div>
+
+    <div id="instrucoes">
+
+    </div>
+    
     <div id="actions" style="clear: both;">
         Seu nome: <input type="text" id="username" style="width: 10em" /> <br/>
-        Mensagem: <input type="text" id="message" onkeydown="pressionouTecla(event)" style="width: 20em"/>
+        Posição X: <input type="text" id="messageX" onkeydown="pressionouTecla(event)" className="inputs"/> <br/>
+        Posição Y: <input type="text" id="messageY" onkeydown="pressionouTecla(event)" className="inputs"/>
         <button onClick="send()" >
             Enviar
         </button>
+    </div>
+
+    <div id="chat">
+        
     </div>
 </body>
 </html>

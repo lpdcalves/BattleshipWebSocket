@@ -1,10 +1,14 @@
 const ws = new WebSocket("ws://" + location.host);
-let msg;
+let msgX;
+let msgY;
 let chat;
 let cabecalho;
+let notificacoes;
+let instrucoes;
 let username; // nome do usuário
 let partida_id;
 let user_id;
+let navios_para_colocar;
 
 let tabuleiro = [[0, 0], [0, 0]];
 let tabuleiro_adversario = [[0, 0], [0, 0]];
@@ -16,13 +20,21 @@ function atualiza_tabuleiro(json){
     // atualiza o tabuleiro do cliente.
     tabuleiro = json.tabuleiro;
     tabuleiro_adversario = json.tabuleiro_adversario;
-    
+
     const divTabuleiro = document.createElement("DIV");
-    divTabuleiro.innerHTML = "Tabuleiro: " + JSON.stringify(tabuleiro);
+    divTabuleiro.innerHTML = "<br/> Tabuleiro: <br/>" + JSON.stringify(tabuleiro).split('],').join("<br />").replaceAll("[", "").replaceAll("]", "");
     const divTabuleiroAdv = document.createElement("DIV");
-    divTabuleiroAdv.innerHTML = "Tabuleiro Adversário: " + JSON.stringify(tabuleiro_adversario);
+    divTabuleiroAdv.innerHTML = "<br/> Tabuleiro Adversário: <br/>" + JSON.stringify(tabuleiro_adversario).split('],').join("<br />").replaceAll("[", "").replaceAll("]", "");
     chat.appendChild(divTabuleiro);
     chat.appendChild(divTabuleiroAdv);
+}
+
+function atualiza_instrucoes(msg){
+    instrucoes.innerHTML = '';
+    const divInstrucao = document.createElement("DIV");
+    divInstrucao.className = "instrucoes";
+    divInstrucao.innerHTML = msg;
+    instrucoes.appendChild(divInstrucao);
 }
 
 ws.onmessage = (event) => {        
@@ -30,9 +42,10 @@ ws.onmessage = (event) => {
     const json = JSON.parse(event.data);
     console.log('json', json);
 
-    if (json.type == "game_start") {
+    if (json.type == "game_setup") {
         partida_id = json.partida_id;
         user_id = json.user_id;
+        navios_para_colocar = json.qtd_barcos;
         const divIDPartida = document.createElement("DIV");
         const divIDUser = document.createElement("DIV");
         divIDPartida.innerHTML = "ID da Partida: " + json.partida_id;
@@ -40,11 +53,24 @@ ws.onmessage = (event) => {
         cabecalho.appendChild(divIDPartida);
         cabecalho.appendChild(divIDUser);
 
-        // limpa o chat
+        atualiza_instrucoes("Você tem: " + navios_para_colocar + " Navios para colocar. Digite uma coordenada x e y e envie para colocar um navio.");
         atualiza_tabuleiro(json);
     }
 
+    if (json.type == "notify") {
+        notificacoes.innerHTML = '';
+        const divNotificacao = document.createElement("DIV");
+        divNotificacao.className = "notificacoes";
+        divNotificacao.innerHTML = json.message;
+        notificacoes.appendChild(divNotificacao);
+    }
+
+    if (json.type == "updt_instrucoes") {
+        atualiza_instrucoes(json.message);
+    }
+
     if (json.type == 'update') {
+        atualiza_instrucoes(json.instrucao);
         atualiza_tabuleiro(json);
     }
 }
@@ -58,10 +84,17 @@ function send() {
         return;
     }
 
-    // verifica se a mensagem está vazia
-    if (msg.value == "") {
-        alert("Por favor, digite uma mensagem!");
-        msg.focus();
+    // verifica se a mensagem X está vazia
+    if (msgX.value == "") {
+        alert("Por favor, digite uma coordenada X!");
+        msgX.focus();
+        return;
+    }
+
+    // verifica se a mensagem Y está vazia
+    if (msgY.value == "") {
+        alert("Por favor, digite uma coordenada Y!");
+        msgY.focus();
         return;
     }
 
@@ -71,13 +104,13 @@ function send() {
         partida_id: partida_id,
         user_id: user_id,
         username: username.value,
-        message: msg.value
+        messageX: msgX.value,
+        messageY: msgY.value
     }));
 
     // Limpa o campo de texto da mensagem
-    msg.value = '';
-    // foca no campo de texto da mensagem para digitar a próxima
-    msg.focus();
+    msgX.value = '';
+    msgy.value = '';
 }
 
 // Função para enviar mensagem que é executada quando se aperta Enter no campo de texto da mensagem
@@ -90,8 +123,11 @@ function pressionouTecla(event) {
 window.addEventListener('load', (e) => {
     console.log('load')
     username = document.getElementById('username');
-    msg = document.getElementById('message');
+    msgX = document.getElementById('messageX');
+    msgY = document.getElementById('messageY');
     chat = document.getElementById('chat');
     cabecalho = document.getElementById('cabecalho');
+    notificacoes = document.getElementById('notificacoes');
+    instrucoes = document.getElementById('instrucoes');
 });
 
